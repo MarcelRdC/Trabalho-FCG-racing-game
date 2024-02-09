@@ -2871,7 +2871,7 @@
 	<inttypes.h>
 	<stdint.h>
 
-1707260978 source:c:\users\marcel\desktop\trabalho-fcg-racing-game\src\main.cpp
+1707509429 source:c:\users\marcel\desktop\trabalho-fcg-racing-game\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -2893,6 +2893,7 @@
 	<stb_image.h>
 	"utils.h"
 	"matrices.h"
+	"collisions.cpp"
 
 1701916240 c:\users\marcel\desktop\trabalho-fcg-racing-game\include\glfw\glfw3.h
 	<stddef.h>
@@ -3794,4 +3795,8 @@
 
 1701916240 source:c:\users\marcel\desktop\trabalho-fcg-racing-game\src\tiny_obj_loader.cpp
 	"tiny_obj_loader.h"
+
+1707508372 source:c:\users\marcel\desktop\trabalho-fcg-racing-game\src\colllisions.cpp
+
+1707508372 c:\users\marcel\desktop\trabalho-fcg-racing-game\src\collisions.cpp
 

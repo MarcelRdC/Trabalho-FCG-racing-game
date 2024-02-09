@@ -48,6 +48,9 @@
 #include "utils.h"
 #include "matrices.h"
 
+// Testes de colisão
+#include "collisions.cpp"
+
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -248,6 +251,9 @@ bool third_cow_view=true;
 
 float initial_time = (float)glfwGetTime();
 float prev_time = initial_time;
+float gravity_acc =0.0f;
+bool jumping=false;
+float bezier_t = 0;
 ///////////
 
 int main(int argc, char* argv[])
@@ -428,6 +434,19 @@ int main(int argc, char* argv[])
         g_PosY=g_PosY+((camera_view_vector[1])/norm(camera_view_vector))*0.5f*speed*delta_t;
         g_PosZ=g_PosZ+((camera_view_vector[2])/norm(camera_view_vector))*0.5f*speed*delta_t;
 
+        if(jumping){
+            gravity_acc=gravity_acc-20.0f;
+            g_PosY=g_PosY-(gravity_acc*delta_t);
+            jumping=false;
+        }
+        g_PosY=g_PosY-(gravity_acc*delta_t);
+        if(g_PosY>0.0f)
+            gravity_acc=gravity_acc+0.05f;
+        if(g_PosY<0.0f){
+            g_PosY=0.0f;
+            gravity_acc=0.0f;
+        }
+
         if(move_camera_W){
             if(speed<180)
                 speed = speed+0.5f;
@@ -505,11 +524,15 @@ int main(int argc, char* argv[])
         #define FENCE  4
         #define PLANE2 5
 
-        glm::vec3 p0 = glm::vec3(0.0f,0.0f,0.0f);
-        glm::vec3 p1 = glm::vec3(0.0f,0.0f,-1218.0f);
-        glm::vec3 p2 = glm::vec3(-636.0f,0.0f,-1218.0f);
-        glm::vec3 p3 = glm::vec3(-636.0f,0.0f,0.0f);
-        glm::vec3 oponente1 = cubicBezier(p0, p1, p2, p3, delta_t);
+        glm::vec3 p0 = glm::vec3(0.0f,0.0f,-900.0f);
+        glm::vec3 p1 = glm::vec3(-50.0f,0.0f,-1300.0f);
+        glm::vec3 p2 = glm::vec3(-586.0f,0.0f,-1300.0f);
+        glm::vec3 p3 = glm::vec3(-636.0f,0.0f,-900.0f);
+        if(bezier_t>=1.0f)
+            bezier_t = 0.0f;
+        else
+            bezier_t = bezier_t+(0.05f*delta_t);
+        glm::vec3 oponente1 = cubicBezier(p0, p1, p2, p3, (bezier_t));
         glm::vec3 oponente2 = oponente1;
 
         // Desenhamos o plano do chão
@@ -519,8 +542,8 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
 
-        model = Matrix_Translate(0.0f,0.1f,0.0f)
-                *Matrix_Scale(30.0f,1.0f,5.0f);
+        model = Matrix_Translate(0.0f,0.1f,-5.0f)
+                *Matrix_Scale(20.0f,1.0f,2.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE2);
         DrawVirtualObject("the_plane");
@@ -541,7 +564,7 @@ int main(int argc, char* argv[])
         DrawVirtualObject("Body_BodyMesh");
         DrawVirtualObject("Glass_Plane.006");
 
-        model = Matrix_Translate(oponente1.x-3.0f, oponente1.y, oponente1.z)
+        model = Matrix_Translate(oponente1.x, oponente1.y, oponente1.z)
                 * Matrix_Rotate_Z(g_AngleZ)  // TERCEIRO rotação Z de Euler
                 * Matrix_Rotate_Y(M_PI+g_AngleY)  // SEGUNDO rotação Y de Euler
                 * Matrix_Rotate_X(g_AngleX); // PRIMEIRO rotação X de Euler
@@ -570,7 +593,7 @@ int main(int argc, char* argv[])
         // Desenhamos a grade
         int grid;
         for (grid=-45; grid <45; grid++){
-        model = Matrix_Translate(10.0f,0.0f,-20.0f*grid)
+        model = Matrix_Translate(10.0f,0.0f,(-20.0f*grid)-10.0f)
                 * Matrix_Rotate_Y(M_PI_2);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, FENCE);
@@ -578,7 +601,7 @@ int main(int argc, char* argv[])
         }
 
         for (grid=-45; grid <45; grid++){
-        model = Matrix_Translate(-646.7f,0.0f,-20.0f*grid)
+        model = Matrix_Translate(-646.7f,0.0f,(-20.0f*grid)-10.0f)
                 * Matrix_Rotate_Y(-M_PI_2);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, FENCE);
@@ -586,7 +609,7 @@ int main(int argc, char* argv[])
         }
 
         for (grid=-45; grid <45; grid++){
-        model = Matrix_Translate(-626.7f,0.0f,-20.0f*grid)
+        model = Matrix_Translate(-626.7f,0.0f,(-20.0f*grid)-10.0f)
                 * Matrix_Rotate_Y(M_PI_2);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, FENCE);
@@ -594,7 +617,7 @@ int main(int argc, char* argv[])
         }
 
         for (grid=-45; grid <45; grid++){
-        model = Matrix_Translate(-10.0f,0.0f,-20.0f*grid)
+        model = Matrix_Translate(-10.0f,0.0f,(-20.0f*grid)-10.0f)
                 * Matrix_Rotate_Y(-M_PI_2);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, FENCE);
@@ -602,8 +625,8 @@ int main(int argc, char* argv[])
         }
 
         float offset_x =10.0f;
-        float offset_z =-880.0f;
-        for (grid=0; grid <52; grid++){
+        float offset_z =-890.0f;
+        for (grid=1; grid <51; grid++){
             float temp_angle = (grid*0.06091805590284244318138298248938f);
             offset_x = offset_x -(20*sin(temp_angle));
             offset_z = offset_z -(20*cos(temp_angle));
@@ -614,8 +637,8 @@ int main(int argc, char* argv[])
         DrawVirtualObject("wall_End");
         }
         offset_x =-10.0f;
-        offset_z =-880.0f;
-        for (grid=0; grid <48; grid++){
+        offset_z =-890.0f;
+        for (grid=1; grid <47; grid++){
             float temp_angle = (grid*0.06486979787627548305668045696008f);
             offset_x = offset_x -(20*sin(temp_angle));
             offset_z = offset_z -(20*cos(temp_angle));
@@ -628,8 +651,8 @@ int main(int argc, char* argv[])
 
 
         offset_x =-646.0f;
-        offset_z =880.0f;
-        for (grid=0; grid <52; grid++){
+        offset_z =890.0f;
+        for (grid=1; grid <51; grid++){
             float temp_angle = (grid*0.06091805590284244318138298248938f);
             offset_x = offset_x +(20*sin(temp_angle));
             offset_z = offset_z +(20*cos(temp_angle));
@@ -640,8 +663,8 @@ int main(int argc, char* argv[])
         DrawVirtualObject("wall_End");
         }
         offset_x =-626.0f;
-        offset_z =880.0f;
-        for (grid=0; grid <48; grid++){
+        offset_z =890.0f;
+        for (grid=1; grid <47; grid++){
             float temp_angle = (grid*0.06486979787627548305668045696008f);
             offset_x = offset_x +(20*sin(temp_angle));
             offset_z = offset_z +(20*cos(temp_angle));
@@ -838,6 +861,8 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage4"), 4);
     glUseProgram(0);
 }
 
@@ -1422,8 +1447,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
     }
 
-    // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    // Se o usuário apertar a tecla F, resetamos os ângulos de Euler para zero.
+    if (key == GLFW_KEY_F && action == GLFW_PRESS)
     {
         g_AngleX = 0.0f;
         g_AngleY = 0.0f;
@@ -1435,6 +1460,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_PosX = 0.0f;
         g_PosY = 0.0f;
         g_PosZ = 0.0f;
+    }
+
+    // Pula
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    {
+        jumping=true;
     }
 
     // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.
