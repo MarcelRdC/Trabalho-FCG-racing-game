@@ -7,7 +7,7 @@
 
 ## Conceitos de Computação Gráfica
 
-# Malhas poligonais complexas
+### Malhas poligonais complexas
 	A aplicação conta com 3 carros em formato .obj obtido no site turbosquid.com.
 ### Transformações geométricas controladas pelo usuário
 	As transformações geométricas controladas pelo usuário são a translação e a rotação do carro. Não houve problemas de implementação.
