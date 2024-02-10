@@ -246,7 +246,6 @@ bool move_camera_AS=false;
 bool move_camera_SD=false;
 float cam_speed=0.05;
 float speed=0;
-glm::vec4 camera_position_general=glm::vec4(0.0f,1.0f,2.0f,1.0f);
 bool third_cow_view=true;
 
 float initial_time = (float)glfwGetTime();
@@ -333,7 +332,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
     LoadTextureImage("../../data/car_paint.gif");   // TextureImage1
     LoadTextureImage("../../data/fenceee.gif");    // TextureImage2
-    LoadTextureImage("../../data/asfalto.gif");    // TextureImage3
+    LoadTextureImage("../../data/asfalto.jpg");    // TextureImage3
     LoadTextureImage("../../data/white.gif"); // TextureImage4
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
@@ -536,8 +535,8 @@ int main(int argc, char* argv[])
         glm::vec3 oponente2 = oponente1;
 
         // Desenhamos o plano do chão
-        model = Matrix_Translate(-1000.0f,0.0f,0.0f)
-                *Matrix_Scale(2000.0f,1.0f,2000.0f);
+        model = Matrix_Translate(-400.0f,0.0f,-400.0f)
+                *Matrix_Scale(1000.0f,1.0f,1000.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
