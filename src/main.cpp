@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow* window;
-    window = glfwCreateWindow(800, 600, "Vacup v1.0", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "VaCUP v0.0.3", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -424,6 +424,7 @@ int main(int argc, char* argv[])
             printf("fixed ");
         }
 
+        //Atualização da posição do carro do jogador
         // Atualiza delta de tempo
         float current_time = (float)glfwGetTime();
         float delta_t = (current_time - prev_time);
@@ -523,6 +524,7 @@ int main(int argc, char* argv[])
         #define FENCE  4
         #define PLANE2 5
 
+        //Implementação da Curva de Bézier
         glm::vec3 p0 = glm::vec3(0.0f,0.0f,-900.0f);
         glm::vec3 p1 = glm::vec3(-50.0f,0.0f,-1300.0f);
         glm::vec3 p2 = glm::vec3(-586.0f,0.0f,-1300.0f);
@@ -541,14 +543,17 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
 
+        // Desenhamos a linha de largada no chão
         model = Matrix_Translate(0.0f,0.1f,-5.0f)
                 *Matrix_Scale(20.0f,1.0f,2.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE2);
         DrawVirtualObject("the_plane");
 
+        // Constantes para auxiliar as rotações
         #define M_PI   3.14159265358979323846
         #define M_PI_2 1.57079632679489661923
+
         // Desenhamos os carros
         model = Matrix_Translate(g_PosX, g_PosY, g_PosZ)
                 * Matrix_Rotate_Z(g_AngleZ)  // TERCEIRO rotação Z de Euler
@@ -589,7 +594,8 @@ int main(int argc, char* argv[])
         DrawVirtualObject("Body_BodyMesh");
         DrawVirtualObject("Glass_Plane.006");
 
-        // Desenhamos a grade
+        // Desenhamos as paredes
+        // Retas
         int grid;
         for (grid=-45; grid <45; grid++){
         model = Matrix_Translate(10.0f,0.0f,(-20.0f*grid)-10.0f)
@@ -623,6 +629,7 @@ int main(int argc, char* argv[])
         DrawVirtualObject("wall_End");
         }
 
+        // Curvas
         float offset_x =10.0f;
         float offset_z =-890.0f;
         for (grid=1; grid <51; grid++){
@@ -674,28 +681,10 @@ int main(int argc, char* argv[])
         DrawVirtualObject("wall_End");
         }
 
-
-  /*      // A terceira cópia do cubo sofrerá rotações em X,Y e Z (nessa
-        // ordem) seguindo o sistema de ângulos de Euler, e após uma
-        // translação em X. Veja slides 106-107 do documento Aula_07_Transformacoes_Geometricas_3D.pdf.
-        model = //Matrix_Translate(-2.0f, 0.0f, 0.0f) // QUARTO translação
-                Matrix_Translate(g_PosX, g_PosY, g_PosZ)
-                * Matrix_Rotate_Z(g_AngleZ)  // TERCEIRO rotação Z de Euler
-                * Matrix_Rotate_Y(g_AngleY)  // SEGUNDO rotação Y de Euler
-                * Matrix_Rotate_X(g_AngleX); // PRIMEIRO rotação X de Euler
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, false);
-        glDrawElements(
-                g_VirtualScene["cube_faces"].rendering_mode, // Veja slides 182-188 do documento Aula_04_Modelagem_Geometrica_3D.pdf
-                g_VirtualScene["cube_faces"].num_indices,
-                GL_UNSIGNED_INT,
-                (void*)g_VirtualScene["cube_faces"].first_index);*/
-
-        //Velocímetro
+        //  Velocímetro
         TextRendering_ShowSpeed(window, abs(speed));
 
-        // Imprimimos na tela os ângulos de Euler que controlam a rotação do
-        // terceiro cubo.
+        // Posição no mundo
         TextRendering_ShowEulerAngles(window);
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
@@ -1625,7 +1614,7 @@ void TextRendering_ShowEulerAngles(GLFWwindow* window)
     float pad = TextRendering_LineHeight(window);
 
     char buffer[80];
-    snprintf(buffer, 80, "Euler Angles rotation matrix = Z(%.2f)*Y(%.2f)*X(%.2f)\n", g_AngleZ, g_AngleY, g_AngleX);
+    snprintf(buffer, 80, "Posição no mundo = Z(%.2f)*Y(%.2f)*X(%.2f)\n", g_AngleZ, g_AngleY, g_AngleX);
 
     TextRendering_PrintString(window, buffer, -1.0f+pad/10, -1.0f+2*pad/10, 1.0f);
 }
@@ -1850,6 +1839,7 @@ void PrintObjModelInfo(ObjModel* model)
   }
 }
 
+// FONTE - https://chat.openai.com/
 // Calculate the point on the cubic Bézier curve for t in [0, 1]
 glm::vec3 cubicBezier(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float t) {
     float u = 1 - t;
@@ -1865,40 +1855,6 @@ glm::vec3 cubicBezier(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, fl
 
     return p;
 }
-
-/*// Calculate points on the cubic Bézier curve and store them in a vector
-vec3 calculateBezierCurve(vec3 p0, vec3 p1, vec3 p2, vec3 p3, int numPoints) {
-    std::vector<Point> curvePoints;
-
-    for (int i = 0; i <= numPoints; ++i) {
-        float t = static_cast<float>(i) / numPoints;
-        Point p = cubicBezier(p0, p1, p2, p3, t);
-        curvePoints.push_back(p);
-    }
-
-    return curvePoints;
-}*/
-
-/*int main() {
-    // Define control points
-    Point p0(50, 100);
-    Point p1(150, 50);
-    Point p2(250, 150);
-    Point p3(350, 100);
-
-    // Number of points to calculate on the curve
-    int numPoints = 100;
-
-    // Calculate points on the cubic Bézier curve
-    std::vector<Point> curvePoints = calculateBezierCurve(p0, p1, p2, p3, numPoints);
-
-    // Output the points (you can use these points to draw the curve in your graphical application)
-    for (const auto& point : curvePoints) {
-        std::cout << "(" << point.x << ", " << point.y << ")\n";
-    }
-
-    return 0;
-}*/
 
 // set makeprg=cd\ ..\ &&\ make\ run\ >/dev/null
 // vim: set spell spelllang=pt_br :
